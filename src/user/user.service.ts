@@ -30,5 +30,4 @@ export class UserService {
     return await this.userModel.findById(userId);
   }
 }
-export { User };
 
