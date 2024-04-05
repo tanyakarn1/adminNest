@@ -1,18 +1,29 @@
-import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document } from 'mongoose';
+import { Column, Table,Model } from 'sequelize-typescript';
+import { PrimaryGeneratedColumn,Entity } from 'typeorm';
 
-export type UserDocument = User & Document;
+@Table
 
-@Schema() // Decorator for the class definition
-export class User {
-  @Prop({ required: true }) // Decorator for the property
+export class User extends Model<User> {
+  static save(user: User) {
+    throw new Error('Method not implemented.');
+  }
+  @Column({primaryKey: true})
+  id: string; 
+
+  @Column({ unique: true })
   username: string;
 
-  @Prop({ required: true }) // Decorator for the property
+  @Column({ unique: true })
   email: string;
 
-  @Prop({ default: false }) // Decorator for the property
+  @Column({ defaultValue: false })
   isBlocked: boolean;
+
+  @Column({ unique: false})
+  password: string;
 }
 
-export const UserSchema = SchemaFactory.createForClass(User);
+
+
+  // ... other user profile fields
+

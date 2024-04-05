@@ -1,34 +1,63 @@
 import { Injectable } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { User, UserDocument } from './user.model'; // Import the UserDocument type
-import { Model } from 'mongoose';
+import { InjectModel } from '@nestjs/sequelize';
+import { Model } from 'sequelize';
+import { Op } from 'sequelize';
+import { Sequelize } from 'sequelize';
+import { User } from './user.model'; // Import the User entity
+
 
 @Injectable()
 export class UserService {
-  get() {
+  userRepository: any;
+  delete(userId: number) {
     throw new Error('Method not implemented.');
   }
-  constructor(@InjectModel(User.name) private readonly userModel: Model<UserDocument>) {}
+  constructor(
+    @InjectModel(User)
+    private readonly userModel: typeof User,
+  ) {}
 
-  async blockUser(userId: string): Promise<User | null> {
-    return await this.userModel.findOneAndUpdate(
-      { _id: userId },
-      { $set: { isBlocked: true } },
-      { new: true } // Return the updated document
-    );
+  async getUser(username: string): Promise<User | undefined> {
+    return await this.userModel.findOne({ where:{id: username} }); // Find by ID (assuming numeric ID)
   }
 
-  async unblockUser(userId: string): Promise<User | null> {
-    return await this.userModel.findOneAndUpdate(
-      { _id: userId },
-      { $set: { isBlocked: false } },
-      { new: true }
-    );
+  async blockUser(userId: string): Promise<User | undefined> {
+    const user = await this.userModel.findOne({ where:{id: userId} });
+    if (user) {
+      user.isBlocked = true;
+      await this.userModel.save(user);
+      return user;
+    }
+    return undefined; // Or throw an HttpException for clarity
   }
 
-  async getUser(userId: string): Promise<User | null> {
-    return await this.userModel.findById(userId);
+  async unblockUser(userId: string): Promise<User | undefined> {
+    const user = await this.userRepository.findOne({where:{ id: userId} });
+    if (user) {
+      user.isBlocked = false;
+      await this.userRepository.save(user);
+      return user;
+    }
+    return undefined; // Or throw an HttpException for clarity
   }
+  async searchUsers(searchTerm: string): Promise<User[]> {
+    return await this.userModel.findAll({
+      where: {
+        [Op.or]: [
+          { username: { [Op.like]: `%${searchTerm}%` } },
+          { email: { [Op.like]: `%${searchTerm}%` } },
+          // ... search by other fields if needed
+        ],
+      },
+    });
+  }
+
+  async getUserProfile(userId: number): Promise<User | undefined> {
+    return await this.userModel.findByPk(userId);
+  }
+
+  
+  
+
+  // ... other methods as needed (implement using UserRepository)
 }
-export { User };
-
