@@ -8,7 +8,7 @@ import { User } from './user/user.model';
 import dbconfig from './dbconfig';
 
 
-import { ConfigModule, ConfigObject } from '@nestjs/config';
+import { ConfigModule} from '@nestjs/config';
 
 
 
@@ -23,7 +23,8 @@ import { ConfigModule, ConfigObject } from '@nestjs/config';
     ConfigModule.forRoot({
       load:[appConfig],
     }),
-    SequelizeModule.forRoot({
+    SequelizeModule.forRootAsync({
+      useFactory:()=>({
     dialect: 'mysql',
     host: process.env.DATABASE_HOST,
     port: +process.env.DATABASE_PORT,
@@ -32,8 +33,7 @@ import { ConfigModule, ConfigObject } from '@nestjs/config';
     database: process.env.DATABASE_NAME,
     models: [User],
     synchronize: true,
-   
-    
+   }),
   }),
   ],
   controllers:[AppController],
@@ -41,8 +41,8 @@ import { ConfigModule, ConfigObject } from '@nestjs/config';
   
 })
 export class AppModule {}
-
-function appConfig(): ConfigObject {
-  throw new Error('Function not implemented.');
+ 
+function appConfig() {
+  return dbconfig;
 }
 
