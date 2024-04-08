@@ -18,7 +18,7 @@ export class UserService {
   ) {}
 
   async getUser(username: string): Promise<User | undefined> {
-    return await this.userModel.findOne({ where:{id: username} }); // Find by ID (assuming numeric ID)
+    return await this.userModel.findOne({ where:{id: userId} }); // Find by ID
   }
 
   async blockUser(userId: string): Promise<User | undefined> {
